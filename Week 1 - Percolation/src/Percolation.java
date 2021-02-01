@@ -8,6 +8,7 @@ public class Percolation {
     private final int bottom;
     private int openSites;
     private final WeightedQuickUnionUF qf;
+    private final WeightedQuickUnionUF qfNoBottom;
 
     /**
      * Creating an N by N grid
@@ -23,6 +24,7 @@ public class Percolation {
         size = n;
         bottom = size * size + 1;
         qf = new WeightedQuickUnionUF(size * size + 2);
+        qfNoBottom = new WeightedQuickUnionUF(size * size + 1);
         opened = new boolean[size][size];
         openSites = 0;
     }
@@ -41,6 +43,7 @@ public class Percolation {
         // Edge Case => If any of the top row boxes are opened => Union(box, top)
         if (row == 1) {
             qf.union(getQuickFindIndex(row, col), TOP);
+            qfNoBottom.union(getQuickFindIndex(row, col), TOP);
         }
 
         // Edge Case => If any of the bottom row boxes are opened => Union(box, bottom)
@@ -51,18 +54,22 @@ public class Percolation {
         // If any of the boxes in the middle rows (except top and bottom) are opened then check for neighbouring unions
         if (row > 1 && isOpen(row - 1, col)) {
             qf.union(getQuickFindIndex(row, col), getQuickFindIndex(row - 1, col));
+            qfNoBottom.union(getQuickFindIndex(row, col), getQuickFindIndex(row - 1, col));
         }
 
         if (row < size && isOpen(row + 1, col)) {
             qf.union(getQuickFindIndex(row, col), getQuickFindIndex(row + 1, col));
+            qfNoBottom.union(getQuickFindIndex(row, col), getQuickFindIndex(row + 1, col));
         }
 
         if (col > 1 && isOpen(row, col - 1)) {
             qf.union(getQuickFindIndex(row, col), getQuickFindIndex(row, col - 1));
+             qfNoBottom.union(getQuickFindIndex(row, col), getQuickFindIndex(row, col - 1));
         }
 
         if (col < size && isOpen(row, col + 1)) {
             qf.union(getQuickFindIndex(row, col), getQuickFindIndex(row, col + 1));
+            qfNoBottom.union(getQuickFindIndex(row, col), getQuickFindIndex(row, col + 1));
         }
     }
 
@@ -100,7 +107,7 @@ public class Percolation {
 
     public boolean isFull(int row, int col) {
         if ((row > 0 && row <= size) && (col > 0 && col <= size)) {
-            return qf.find(TOP) == qf.find(getQuickFindIndex(row, col));
+            return qfNoBottom.find(TOP) == qfNoBottom.find(getQuickFindIndex(row, col));
         } else throw new IllegalArgumentException();
     }
 
